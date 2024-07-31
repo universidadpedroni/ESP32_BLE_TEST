@@ -6,13 +6,24 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include "BLEConstants.h"
+
+#define BLE_SERVER_NAME "Mi ESP32"
+#define SERVICE_UUID (BLEUUID((uint16_t)0x181A))
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
+#define DEVINFO_UUID (uint16_t)0x180a
+#define DEVINFO_MANUFACTURER_UUID (uint16_t)0x2a29
+#define DEVINFO_NAME_UUID (uint16_t)0x2a24
+#define DEVINFO_SERIAL_UUID (uint16_t)0x2a25
+
+#define DEVICE_MANUFACTURER "+54 Stompboxes"
+#define DEVICE_NAME "BLETest"
 
 class BLEHandler {
 public:
     BLEHandler();
     void init();
-    void update(uint16_t valor);
+    void update(float t = 25, float h = 80, float p = 100);
 
 private:
     BLEServer* pServer;
@@ -27,10 +38,8 @@ private:
     private:
         BLEHandler* handler;
     };
-
-    //static constexpr const char* SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-    //static constexpr const char* CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 };
 
 #endif // BLEFUNCTIONS_H
+
 

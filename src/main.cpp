@@ -19,8 +19,7 @@ void setup() {
 
 void loop() {
   delay(1000);
-  uint16_t valor = 0;
-  bleHandler.update(valor);
-  valor++;
+  bleHandler.update();
+  
 }
 
