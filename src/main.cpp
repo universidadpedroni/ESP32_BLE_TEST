@@ -19,7 +19,15 @@ void setup() {
 
 void loop() {
   delay(1000);
-  bleHandler.update();
-  
+  bleHandler.update(25 + (float)random(10), 80 + (float)random(10) , 100 + (float)random(10));
+   static String previousValue = "";
+    String currentValue = bleHandler.getLastValue();
+    
+    if (currentValue != "" && currentValue != previousValue) {
+        Serial.print("Valor leído: ");
+        Serial.println(currentValue);
+        previousValue = currentValue;
+    }
+    
 }
 

@@ -24,11 +24,14 @@ public:
     BLEHandler();
     void init();
     void update(float t = 25, float h = 80, float p = 100);
+    String getLastValue() const; // Nuevo método para obtener el último valor
 
 private:
     BLEServer* pServer;
     BLECharacteristic* pCharacteristic;
+    BLECharacteristic* pWriteCharacteristic;
     bool deviceConnected;
+    String lastValue; // Almacena el último valor escrito
 
     class MyServerCallbacks : public BLEServerCallbacks {
     public:
@@ -38,8 +41,14 @@ private:
     private:
         BLEHandler* handler;
     };
+
+    class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
+    public:
+        MyCharacteristicCallbacks(BLEHandler* handler) : handler(handler) {}
+        void onWrite(BLECharacteristic *pWriteCharacteristic);
+    private:
+        BLEHandler* handler;
+    };
 };
 
 #endif // BLEFUNCTIONS_H
-
-

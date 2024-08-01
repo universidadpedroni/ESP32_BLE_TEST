@@ -8,7 +8,20 @@ BLEDescriptor humidityDescriptor(BLEUUID((uint16_t)0x2902));
 BLECharacteristic pressureCharacteristic(BLEUUID((uint16_t)0x2A6D), BLECharacteristic::PROPERTY_NOTIFY);
 BLEDescriptor pressureDescriptor(BLEUUID((uint16_t)0x2902));
 
-BLEHandler::BLEHandler() : pServer(nullptr), pCharacteristic(nullptr), deviceConnected(false) {}
+BLEHandler::BLEHandler() : pServer(nullptr), pCharacteristic(nullptr), pWriteCharacteristic(nullptr), deviceConnected(false), lastValue("") {}
+
+void BLEHandler::MyCharacteristicCallbacks::onWrite(BLECharacteristic *pWriteCharacteristic) {
+    std::string value = pWriteCharacteristic->getValue();
+    if (value.length() > 0) {
+        handler->lastValue = String(value.c_str()); // Actualiza el valor leído
+        /*Serial.println("*********");
+        Serial.print("Nuevo valor escrito: ");
+        for (int i = 0; i < value.length(); i++)
+            Serial.print(value[i]);
+        Serial.println();
+        Serial.println("*********");*/
+    }
+}
 
 void BLEHandler::MyServerCallbacks::onConnect(BLEServer* pServer) {
     handler->deviceConnected = true;
@@ -44,6 +57,15 @@ void BLEHandler::init() {
     pService->addCharacteristic(&pressureCharacteristic);
     pressureCharacteristic.addDescriptor(&pressureDescriptor);
 
+    pWriteCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID,
+                            BLECharacteristic::PROPERTY_READ |
+                            BLECharacteristic::PROPERTY_WRITE);
+    pWriteCharacteristic->setCallbacks(new MyCharacteristicCallbacks(this));
+    pWriteCharacteristic->setValue("Write Me!");
+    
+    // Iniciar el servicio principal
+    pService->start();
+    
     // Registrar servicio de información del dispositivo
     BLEService* pDevInfoService = pServer->createService(DEVINFO_UUID);
     if (!pDevInfoService) {
@@ -58,9 +80,6 @@ void BLEHandler::init() {
     String chipId = String((uint32_t)(ESP.getEfuseMac() >> 24), HEX);
     characteristic->setValue(chipId.c_str());
     pDevInfoService->start();
-
-    // Iniciar el servicio principal
-    pService->start();
 
     // Iniciar el advertising
     BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
@@ -78,24 +97,28 @@ void BLEHandler::update(float t, float h, float p) {
         uint16_t temperature = (uint16_t)t;
         temperatureCharacteristic.setValue(temperature);
         temperatureCharacteristic.notify();
-        Serial.print("Temperature Celsius: ");
-        Serial.print(t);
-        Serial.println(" ºC");
+        //Serial.print("Temperature Celsius: ");
+        //Serial.print(t);
+        //Serial.println(" ºC");
    
         // Notify humidity reading
         uint16_t humidity = (uint16_t)h;
         humidityCharacteristic.setValue(humidity);
         humidityCharacteristic.notify();   
-        Serial.print("Humidity: ");
-        Serial.print(h);
-        Serial.println(" %");
+        //Serial.print("Humidity: ");
+        //Serial.print(h);
+        //Serial.println(" %");
 
         // Notify pressure reading
         uint16_t pressure = (uint16_t)p;
         pressureCharacteristic.setValue(pressure);
         pressureCharacteristic.notify();   
-        Serial.print("Pressure: ");
-        Serial.print(p);
-        Serial.println(" hPa");
+        //Serial.print("Pressure: ");
+        //Serial.print(p);
+        //Serial.println(" hPa");
     }
+}
+
+String BLEHandler::getLastValue() const {
+    return lastValue;
 }
